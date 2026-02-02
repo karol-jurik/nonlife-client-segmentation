@@ -1,4 +1,6 @@
 data/
+*.xlsx
+*.RData
 output/
 *.Rhistory
 *.RData
