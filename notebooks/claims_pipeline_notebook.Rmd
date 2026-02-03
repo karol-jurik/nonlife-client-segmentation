@@ -1,0 +1,234 @@
+---
+title: "Claims Frequency Modeling — End-to-end Pipeline (GLM/ZIP/GBM + Interpretation)"
+output:
+  html_notebook:
+    toc: true
+    toc_depth: 3
+params:
+  project_root: ""
+  run_pipeline: true
+  seed: 1
+  k_folds: 10
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+# ----------------------------
+# Project root finder
+# ----------------------------
+find_project_root <- function(start_dir = getwd(), max_up = 10) {
+  cur <- normalizePath(start_dir, winslash = "/", mustWork = FALSE)
+  for (i in 0:max_up) {
+    if (file.exists(file.path(cur, "scripts", "01_setup.R"))) return(cur)
+    parent <- normalizePath(file.path(cur, ".."), winslash = "/", mustWork = FALSE)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  return(NA_character_)
+}
+
+# ----------------------------
+# Decide root dir (works from /notebooks or root)
+# ----------------------------
+# 1) If param exists, use it
+PROJECT_ROOT <- NULL
+if (exists("params") && !is.null(params$project_root) && nzchar(params$project_root)) {
+  PROJECT_ROOT <- normalizePath(params$project_root, winslash = "/", mustWork = FALSE)
+}
+
+# 2) Otherwise, detect it automatically (starting from notebook location)
+if (is.null(PROJECT_ROOT) || !nzchar(PROJECT_ROOT) || is.na(PROJECT_ROOT)) {
+  PROJECT_ROOT <- find_project_root(getwd(), max_up = 10)
+}
+
+if (is.na(PROJECT_ROOT)) {
+  stop(
+    "Project root not found.\n",
+    "Open this notebook from inside the project folder, or set params$project_root.\n",
+    "Expected to find: scripts/01_setup.R"
+  )
+}
+
+# IMPORTANT: set both knit root.dir and working dir
+knitr::opts_knit$set(root.dir = PROJECT_ROOT)
+setwd(PROJECT_ROOT)
+
+cat("Project root:", PROJECT_ROOT, "\n")
+
+# ----------------------------
+# Load pipeline config
+# ----------------------------
+source(file.path("scripts", "01_setup.R"))
+
+# Optional: override seed / kfolds from params if you want
+if (exists("params") && !is.null(params$seed) && !is.na(params$seed)) {
+  SEED <- as.integer(params$seed)
+}
+if (exists("params") && !is.null(params$k_folds) && !is.na(params$k_folds)) {
+  K_FOLDS <- as.integer(params$k_folds)
+}
+
+set.seed(SEED)
+cat("Notebook SEED:", SEED, "\n")
+cat("Notebook K_FOLDS:", K_FOLDS, "\n")
+```
+
+## What this notebook does
+
+This notebook is a **reproducible wrapper** around your existing scripts (01--08).\
+It will:
+
+1.  Run the full pipeline (import → cleaning → feature engineering → models → interpretation).
+2.  Load the saved outputs (tables/models/plots) produced by your scripts.
+3.  Show a quick "what to look at" summary so you have something presentable.
+
+------------------------------------------------------------------------
+
+## 1) Run pipeline (01 → 08)
+
+```{r run-pipeline}
+RUN_PIPELINE <- isTRUE(params$run_pipeline)
+
+if (RUN_PIPELINE) {
+  cat("Running pipeline scripts 02–08...\n")
+
+  # 02 - import & clean
+  source(file.path("scripts", "02_import_clean.R"))
+
+  # 03 - feature engineering
+  source(file.path("scripts", "03_feature_engineering.R"))
+
+  # 04 - glm models (Poisson / NB / ZIP)
+  source(file.path("scripts", "04_glm_models.R"))
+
+  # 05 - gbm models
+  source(file.path("scripts", "05_gbm_models.R"))
+
+  # 06 - interpretation (SHAP etc.)
+  source(file.path("scripts", "06_interpretation_SHAP.R"))
+
+  # 07 - ALE/ICE/PDP (and 08 if you have extra viz)
+  if (file.exists(file.path("scripts", "07_ale_ice_pdp_plots.R"))) {
+    source(file.path("scripts", "07_ale_ice_pdp_plots.R"))
+  }
+  if (file.exists(file.path("scripts", "08_lime.R"))) {
+    source(file.path("scripts", "08_lime.R"))
+  }
+
+  cat("Pipeline finished.\n")
+} else {
+  cat("RUN_PIPELINE = FALSE. Skipping execution; will only load outputs if they exist.\n")
+}
+```
+
+------------------------------------------------------------------------
+
+## 2) Load processed data (train/test)
+
+```{r load-data}
+train_path <- file.path(DIR_DATA_PROCESSED, "train_data.rds")
+test_path  <- file.path(DIR_DATA_PROCESSED, "test_data.rds")
+
+if (file.exists(train_path) && file.exists(test_path)) {
+  train_data <- readRDS(train_path)
+  test_data  <- readRDS(test_path)
+
+  cat("Train rows:", nrow(train_data), "\n")
+  cat("Test rows :", nrow(test_data), "\n")
+} else {
+  cat("Processed train/test not found yet.\n",
+      "Expected:\n - ", train_path, "\n - ", test_path, "\n", sep = "")
+}
+```
+
+------------------------------------------------------------------------
+
+## 3) Model comparison tables
+
+### GLM / ZIP comparison (CV + Holdout)
+
+```{r glm-tables}
+glm_cv_path <- file.path(DIR_OUTPUT_TABLES, "glm_cv_results.csv")
+glm_holdout_path <- file.path(DIR_OUTPUT_TABLES, "glm_holdout_results.csv")
+
+if (file.exists(glm_cv_path)) {
+  glm_cv <- read.csv(glm_cv_path)
+  glm_cv
+} else {
+  cat("Missing:", glm_cv_path, "\n")
+}
+
+if (file.exists(glm_holdout_path)) {
+  glm_holdout <- read.csv(glm_holdout_path)
+  glm_holdout
+} else {
+  cat("Missing:", glm_holdout_path, "\n")
+}
+```
+
+### GBM results (grid + holdout)
+
+```{r gbm-tables}
+gbm_grid_path <- file.path(DIR_OUTPUT_TABLES, "gbm_grid_results.csv")
+gbm_holdout_path <- file.path(DIR_OUTPUT_TABLES, "gbm_holdout_results.csv")
+gbm_varimp_path <- file.path(DIR_OUTPUT_TABLES, "gbm_variable_importance.csv")
+
+if (file.exists(gbm_holdout_path)) {
+  gbm_holdout <- read.csv(gbm_holdout_path)
+  gbm_holdout
+} else {
+  cat("Missing:", gbm_holdout_path, "\n")
+}
+
+if (file.exists(gbm_grid_path)) {
+  gbm_grid <- read.csv(gbm_grid_path)
+  head(gbm_grid)
+} else {
+  cat("Missing:", gbm_grid_path, "\n")
+}
+
+if (file.exists(gbm_varimp_path)) {
+  gbm_varimp <- read.csv(gbm_varimp_path)
+  head(gbm_varimp)
+} else {
+  cat("Missing:", gbm_varimp_path, "\n")
+}
+```
+
+------------------------------------------------------------------------
+
+## 4) Interpretation outputs (SHAP / Break-down / LIME / PDP-ALE-ICE)
+
+```{r list-outputs}
+list_files_safe <- function(path, pattern = NULL) {
+  if (!dir.exists(path)) return(character(0))
+  list.files(path, pattern = pattern, full.names = TRUE)
+}
+
+cat("Tables folder:\n")
+print(list_files_safe(DIR_OUTPUT_TABLES))
+
+cat("\nModels folder:\n")
+print(list_files_safe(DIR_OUTPUT_MODELS))
+
+cat("\nPlots folder:\n")
+if (exists("DIR_OUTPUT_PLOTS")) {
+  print(list_files_safe(DIR_OUTPUT_PLOTS))
+} else {
+  # fallback if you use a different constant name
+  print(list_files_safe(file.path("output", "plots")))
+}
+```
+
+------------------------------------------------------------------------
+
+## Session info
+
+```{r session-info}
+sessionInfo()
+```

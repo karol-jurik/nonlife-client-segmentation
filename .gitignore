@@ -1,7 +1,64 @@
-data/
-*.xlsx
-*.RData
-output/
-*.Rhistory
-*.RData
+# =========================
+# R / RStudio
+# =========================
 .Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# =========================
+# Raw & processed data 
+# =========================
+data/
+data_raw/
+data/processed/
+data/raw/
+data_demo/
+
+# Excel & local data files
+*.xlsx
+*.xls
+*.csv
+*.RData
+*.rds
+
+# =========================
+# Outputs (models, tables, plots)
+# =========================
+output/
+plots/
+analysis/
+
+# =========================
+# Notebooks – outputs only
+# =========================
+notebooks/*.html
+notebooks/*.pdf
+notebooks/*_files/
+
+# =========================
+# OS / editor junk
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Temporary / cache
+# =========================
+*.tmp
+*.log
+*.bak
+*.swp
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
+
+# =========================
+# Credentials / secrets
+# =========================
+.env
+.env.*
