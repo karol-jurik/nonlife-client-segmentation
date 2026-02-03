@@ -131,7 +131,7 @@ The focus is practical, not academic perfection.
 
 **Karol Jurik**  
 📍 Bratislava, SK  
-🔗 [LinkedIn](www.linkedin.com/in/karoljurik) / [GitHub](https://github.com/karol-jurik)
+🔗 [LinkedIn](https://www.linkedin.com/in/karoljurik/) / [GitHub](https://github.com/karol-jurik)
 
 ---
 
