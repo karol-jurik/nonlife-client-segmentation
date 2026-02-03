@@ -39,6 +39,14 @@ These methods make tree-based models transparent and comparable with GLMs.
 
 ---
 
+---
+## Model Explainability – Example
+
+![Aggregated SHAP](output/plots/gbm_shap_aggregated_client.png)
+![Break Down](output/plots/gbm_breakdown_client.png)
+
+---
+
 ## 📁 Repository Structure
 
 ```
