@@ -112,13 +112,11 @@ if (RUN_PIPELINE) {
   # 06 - interpretation (SHAP etc.)
   source(file.path("scripts", "06_interpretation_SHAP.R"))
 
-  # 07 - ALE/ICE/PDP (and 08 if you have extra viz)
-  if (file.exists(file.path("scripts", "07_ale_ice_pdp_plots.R"))) {
-    source(file.path("scripts", "07_ale_ice_pdp_plots.R"))
-  }
-  if (file.exists(file.path("scripts", "08_lime.R"))) {
-    source(file.path("scripts", "08_lime.R"))
-  }
+  # 07 - ALE/ICE/PDP 
+  source(file.path("scripts", "07_gbm_effect_plots.R"))
+  
+  # 08 - ICE
+  source(file.path("scripts", "08_interpretation_LIME.R"))
 
   cat("Pipeline finished.\n")
 } else {

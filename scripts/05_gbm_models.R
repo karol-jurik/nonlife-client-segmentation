@@ -42,15 +42,15 @@ formula_gbm <- stats::as.formula(
 )
 
 # -------------------------
-# Narrow parameter grid
-# (around your thesis defaults)
+# Parameter grid
+# (around thesis defaults)
 # -------------------------
 param_grid <- expand.grid(
-  n.trees = c(50, 70, 100),
-  interaction.depth = c(3, 4),
-  shrinkage = c(0.1, 0.05),
-  bag.fraction = c(0.7),
-  n.minobsinnode = c(50, 100)
+  n.trees = c(70, 100),
+  interaction.depth = c(4, 5),
+  shrinkage = c(0.05, 0.01),
+  bag.fraction = c(0.5, 0.7),
+  n.minobsinnode = c(10, 20)
 )
 
 if (!dir.exists(DIR_OUTPUT_TABLES)) dir.create(DIR_OUTPUT_TABLES, recursive = TRUE)
@@ -93,15 +93,20 @@ best_params <- NULL
 best_iter <- NA
 best_fit <- NULL
 
+failed_count <- 0L
+progress_every <- 5L
+
+start_time <- Sys.time()
+
 for (i in seq_len(nrow(param_grid))) {
   params <- param_grid[i, ]
   
-  cat("Model", i, "/", nrow(param_grid),
-      "| trees:", params$n.trees,
-      "depth:", params$interaction.depth,
-      "shrink:", params$shrinkage,
-      "bag:", params$bag.fraction,
-      "minobs:", params$n.minobsinnode, "\n")
+  #cat("Model", i, "/", nrow(param_grid),
+  #    "| trees:", params$n.trees,
+  #    "depth:", params$interaction.depth,
+  #    "shrink:", params$shrinkage,
+  #    "bag:", params$bag.fraction,
+  #    "minobs:", params$n.minobsinnode, "\n")
   
   res <- tryCatch(
     fit_gbm_cv(train_data, formula_gbm, params, k_folds = K_FOLDS, seed = SEED),
@@ -109,7 +114,7 @@ for (i in seq_len(nrow(param_grid))) {
   )
   
   if (is.null(res)) {
-    cat("  -> FAILED\n\n")
+    failed_count <- failed_count + 1L
     next
   }
   
@@ -125,7 +130,7 @@ for (i in seq_len(nrow(param_grid))) {
   
   grid_results <- dplyr::bind_rows(grid_results, row)
   
-  cat("  -> best_iter:", res$best_iter, "| cv_error:", round(res$cv_error, 6), "\n\n")
+  #cat("  -> best_iter:", res$best_iter, "| cv_error:", round(res$cv_error, 6), "\n\n")
   
   if (!is.na(res$cv_error) && res$cv_error < best_cv) {
     best_cv <- res$cv_error
@@ -133,10 +138,25 @@ for (i in seq_len(nrow(param_grid))) {
     best_iter <- res$best_iter
     best_params <- params
   }
+
+
+  # ---- PROGRESS + ETA ----
+  if (i %% progress_every == 0L || i == nrow(param_grid)) {
+    elapsed_sec <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+    avg_sec_per_model <- elapsed_sec / i
+    remaining_sec <- avg_sec_per_model * (nrow(param_grid) - i)
+    
+    cat(sprintf(
+      "Progress: %d/%d | elapsed: %.1fs | ETA: %.1fs | best_cv: %.6f\n",
+      i, nrow(param_grid), elapsed_sec, remaining_sec, best_cv
+    ))
+  }
 }
 
 write.csv(grid_results, file.path(DIR_OUTPUT_TABLES, "gbm_grid_results.csv"), row.names = FALSE)
 
+cat("\nDONE.\n")
+cat("Failed fits:", failed_count, "\n")
 cat("Best CV error:", best_cv, "\n")
 cat("Best params:\n"); print(best_params)
 cat("Best iter:", best_iter, "\n\n")

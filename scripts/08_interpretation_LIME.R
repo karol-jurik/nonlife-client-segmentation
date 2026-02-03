@@ -80,8 +80,9 @@ print(lime_gbm$results)
 
 # Plot 
 p_lime <- plot(lime_gbm)
-print(p_lime)
 
-save_plot(p_lime, "lime_gbm_client.png", width = 10, height = 5, dpi = 300)
+plot(p_lime)
+#save_plot(p_lime, "lime_gbm_client.png", width = 10, height = 5, dpi = 300)
+save_png_plot(file.path(DIR_OUTPUT_PLOTS, "lime_gbm_client.png"), p_lime, 1200, 800)
 
 cat("08_interpretation_LIME DONE | best_iter =", best_iter, "\n")

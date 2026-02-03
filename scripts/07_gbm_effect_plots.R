@@ -156,13 +156,12 @@ p <- ggplot(plot_df, aes(x = Age)) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5))
 
-print(p)
-
 # -------------------------
 # Save plot
 # -------------------------
 if (!dir.exists(DIR_OUTPUT_PLOTS)) dir.create(DIR_OUTPUT_PLOTS, recursive = TRUE)
 
+plot(p)
 #save_plot(p, "gbm_age_pdp_ale_ice.png")
 save_png_plot(file.path(DIR_OUTPUT_PLOTS, "gbm_age_pdp_ale_ice.png"), p, 1200, 800)
 
