@@ -55,7 +55,7 @@ save_plot <- function(plot_obj, filename, width = 10, height = 5, dpi = 300) {
 
 save_png_plot <- function(filename, plot_obj, width = 1200, height = 800) {
   png(filename, width = width, height = height)
-  print(plot_obj)   # <-- toto je kľúč
+  print(plot_obj)  
   dev.off()
 }
 

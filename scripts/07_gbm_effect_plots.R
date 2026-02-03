@@ -163,7 +163,8 @@ print(p)
 # -------------------------
 if (!dir.exists(DIR_OUTPUT_PLOTS)) dir.create(DIR_OUTPUT_PLOTS, recursive = TRUE)
 
-save_plot(p, "gbm_age_pdp_ale_ice.png")
+#save_plot(p, "gbm_age_pdp_ale_ice.png")
+save_png_plot(file.path(DIR_OUTPUT_PLOTS, "gbm_age_pdp_ale_ice.png"), p, 1200, 800)
 
 cat("\n07_gbm_profiles_plots DONE\n")
 cat("Saved: ", file.path(DIR_OUTPUT_PLOTS, "gbm_age_pdp_ale_ice.png"), "\n")
