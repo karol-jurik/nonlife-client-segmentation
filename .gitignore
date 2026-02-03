@@ -1,64 +1,53 @@
 # =========================
 # R / RStudio
 # =========================
-.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
+.Rproj.user/
 
 # =========================
-# Raw & processed data 
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Raw & sensitive data
 # =========================
 data/
 data_raw/
-data/processed/
 data/raw/
 data_demo/
-
-# Excel & local data files
 *.xlsx
-*.xls
 *.csv
-*.RData
-*.rds
 
 # =========================
-# Outputs (models, tables, plots)
+# Generated outputs
 # =========================
 output/
 plots/
 analysis/
+output/models/
+output/tables/
+output/plots/
 
 # =========================
-# Notebooks – outputs only
+# Notebooks outputs
 # =========================
 notebooks/*.html
 notebooks/*.pdf
-notebooks/*_files/
+notebooks/.ipynb_checkpoints/
 
 # =========================
-# OS / editor junk
+# Logs / temp
 # =========================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# =========================
-# Temporary / cache
-# =========================
-*.tmp
 *.log
+*.tmp
 *.bak
 *.swp
 
 # =========================
-# Python
+# Optional: large binaries
 # =========================
-__pycache__/
-*.pyc
-
-# =========================
-# Credentials / secrets
-# =========================
-.env
-.env.*
+*.rds
