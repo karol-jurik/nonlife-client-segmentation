@@ -123,7 +123,7 @@ This project is based on my MSc thesis in applied statistics / actuarial modelin
 - stronger validation,
 - modern explainability tooling.
 
-The focus is practical, not academic perfection.
+The focus is practical, not academic perfection. Full thesis available in `documents/`.
 
 ---
 
